@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "auto-time-72f2c"
+  },
+  "targets": {
+    "auto-time-72f2c": {
+      "hosting": {
+        "life-analytics": [
+          "life-analytics"
+        ]
+      }
+    }
+  }
+}

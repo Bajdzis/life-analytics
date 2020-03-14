@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "public": "build",
+    "target": "life-analytics",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
