@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import * as firebase from 'firebase';
-import './App.css';
+
+import { Stream } from './components/Stream/Stream';
+import { LoginPage } from './components/LoginPage/LoginPage';
+import { Button } from 'reactstrap';
+
 const firebaseConfig = {
   apiKey: "AIzaSyCwFE6p8DLMvd3M-Ldbo2S8W_jc7lVmHI8",
   authDomain: "auto-time-72f2c.firebaseapp.com",
@@ -13,25 +16,75 @@ const firebaseConfig = {
   measurementId: "G-TNEBFMLF64"
 };
 
-const firebaseApp = firebase.initializeApp(firebaseConfig);
+export const firebaseApp = firebase.initializeApp(firebaseConfig);
 firebaseApp.analytics();
+
+export const firebaseDatabase = firebase.database();
+
+
 function App() {
-  const [user, setUser] = useState<firebase.auth.UserCredential | null>(null);
-  const onClick =  () => {
-    firebaseApp.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
-    // firebaseApp.auth().signInWithPopup(new firebase.auth.EmailAuthProvider())
-    .then((user) => {setUser(user); }).catch(() => setUser(null));
+
+  const [user, setUser] = useState<firebase.User | null>(null);
+  const [streamsId, setStreamsId] = useState<string[]>([]);
+  const singOut =  () => {
+    firebaseApp.auth().signOut();
+    setStreamsId([]);
   };
 
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    const starCountRef = firebaseDatabase.ref(`users/${user.uid}`);
+    starCountRef.on('value', function(snapshot) {
+      const userData = snapshot.val();
+      if (userData && userData.streams && Array.isArray(userData.streams)) {
+        setStreamsId(userData.streams as string[]);
+      } else {
+        setStreamsId([]);
+      }
+    });
+
+    return () => starCountRef.off('value');
+  }, [user]);
+
+  firebase.auth().onAuthStateChanged(setUser);
+
+  const createStream = () => {
+
+    if (!user) {
+      return ;
+    }
+    const newStreamKey = firebaseDatabase.ref().child('streams').push().key;
+    const updates:{[key: string]: any} = {};
+
+    updates['/streams/' + newStreamKey] = {
+      name: prompt('Name of new stream'),
+      uid: user.uid
+    };
+    updates['/users/' + user.uid + '/streams'] = [...streamsId, newStreamKey];
+
+    return firebaseDatabase.ref().update(updates);
+  }
+  if(user === null) {
+    return <LoginPage />;
+  }
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        Hi, {user&& user.user && user.user.displayName} !
-        <button onClick={onClick}>aaaaa</button>
+        Hi, <strong>{user.displayName}</strong> !{' '}
+<Button outline size="sm" color="secondary" onClick={singOut}>singOut</Button>
+        
+<br/>
+<br/>
+        <Button color="primary" onClick={() => createStream()}>Create new stream</Button>
+        <h2>Twoje dane</h2>
+        {streamsId.map(streamId => <Stream id={streamId}/>)}
       </header>
     </div>
   );
 }
 
 export default App;
+
+
