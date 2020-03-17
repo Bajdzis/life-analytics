@@ -4,6 +4,7 @@ import * as firebase from 'firebase';
 import { Stream } from './components/Stream/Stream';
 import { LoginPage } from './components/LoginPage/LoginPage';
 import { Button } from 'reactstrap';
+import moment  from 'moment';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwFE6p8DLMvd3M-Ldbo2S8W_jc7lVmHI8",
@@ -21,11 +22,43 @@ firebaseApp.analytics();
 
 export const firebaseDatabase = firebase.database();
 
-
 function App() {
 
   const [user, setUser] = useState<firebase.User | null>(null);
+  const [zoom, setZoom] = useState<[number, number]>([0,0]);
+  const [loading, setLoading] = useState(true);
   const [streamsId, setStreamsId] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      if(e.ctrlKey) {
+        e.preventDefault();
+        const leftPercent = e.clientX / window.innerWidth;
+        const rightPercent = 1 - leftPercent;
+        let left =  zoom[0] - (e.deltaY  * leftPercent);
+        let right = zoom[1] - (e.deltaY * rightPercent);
+        if(left < 0){
+          left = 0;
+        }
+        if(right < 0){
+          right = 0;
+        }
+        if(left > 1400){
+          left = 1400;
+        }
+        if(right > 1400){
+          right = 1400;
+        }
+        setZoom([left, right]);
+      }
+    };
+    window.addEventListener('wheel', handler, { passive: false });
+    return () => window.removeEventListener('wheel', handler);
+  }, [zoom, setZoom]);
+
+  const start = parseInt(moment().set('hour', 0).set('minute', 0).set('millisecond', 0).add(zoom[0],'minutes').format('x'), 10);
+  const stop = parseInt(moment().set('hour', 24).set('minute', 0).set('millisecond', 0).subtract(zoom[1],'minutes').format('x'), 10);
+
   const singOut =  () => {
     firebaseApp.auth().signOut();
     setStreamsId([]);
@@ -48,13 +81,19 @@ function App() {
     return () => starCountRef.off('value');
   }, [user]);
 
-  firebase.auth().onAuthStateChanged(setUser);
+  firebase.auth().onAuthStateChanged((user) => {
+    setUser(user);
+    setLoading(false);
+  });
+  
+  if(loading === true) {
+    return <>{"Loading"}</>;
+  }
+  if(user === null) {
+    return <LoginPage />;
+  }
 
   const createStream = () => {
-
-    if (!user) {
-      return ;
-    }
     const newStreamKey = firebaseDatabase.ref().child('streams').push().key;
     const updates:{[key: string]: any} = {};
 
@@ -66,9 +105,7 @@ function App() {
 
     return firebaseDatabase.ref().update(updates);
   }
-  if(user === null) {
-    return <LoginPage />;
-  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -79,7 +116,7 @@ function App() {
 <br/>
         <Button color="primary" onClick={() => createStream()}>Create new stream</Button>
         <h2>Twoje dane</h2>
-        {streamsId.map(streamId => <Stream id={streamId}/>)}
+        {streamsId.map(streamId => <Stream id={streamId} start={start} stop={stop}/>)}
       </header>
     </div>
   );

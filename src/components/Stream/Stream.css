@@ -1,0 +1,74 @@
+.stream__timeline {
+  width:100%;
+  height: 60px;
+  position: relative;
+  padding:35px 0;
+}
+
+.stream__group {
+  background: rgba(0, 123, 255, 0.60) ;
+  border-left: 1px solid #FFF;
+  position:absolute;
+  height: 60px;
+  min-width: 2px;
+}
+
+.stream__group:hover {
+  margin-top: -5px;
+  height: 65px;
+}
+
+.stream__group--selected {
+  position: relative;
+  width: 100%;
+}
+
+.stream__event {
+  background: #007bff;
+  overflow: hidden;
+  position: absolute;
+  height: 100%;
+  width: 2px;
+}
+
+.stream__payload {
+  position: absolute;
+  z-index: 2;
+  left:4px;
+  top:0;
+  width: calc( 100% - 8px );
+  height:100%;
+  overflow: hidden;
+  font-size: 12px;
+  padding: 4px 0;
+  line-height: 1;
+}
+
+.stream__payloadValue {
+  font-size: 14px;
+}
+.stream__meta {
+  position: sticky;
+  left:0;
+}
+.stream__time {
+  position: absolute;
+  bottom: 100%;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.stream__group:hover  .stream__time {
+  opacity: 1;
+}
+
+.stream__time--left {
+  right: 100%;
+}
+
+.stream__time--right {
+  left: 100%;
+}
+
+.stream__time--bottom {
+  top: 100%; 
+}
