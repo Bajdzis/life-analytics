@@ -116,7 +116,7 @@ function App() {
 <br/>
         <Button color="primary" onClick={() => createStream()}>Create new stream</Button>
         <h2>Twoje dane</h2>
-        {streamsId.map(streamId => <Stream id={streamId} start={start} stop={stop}/>)}
+        {streamsId.map(streamId => <Stream key={streamId} id={streamId} start={start} stop={stop}/>)}
       </header>
     </div>
   );

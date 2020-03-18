@@ -2,6 +2,7 @@ import React from 'react';
 import * as firebase from 'firebase';
 import { firebaseApp } from '../../App';
 import { Button } from 'reactstrap';
+import { Tr } from '../Translation/Tr';
 
 
 const singInWithGoogle =  () => {
@@ -15,7 +16,7 @@ const singInWithGithub =  () => {
 export function LoginPage(){
   return <div style={{textAlign: 'center', padding:'160px 0'}}>
     <h1 className="display-3">Life analytics</h1>
-    <p>Login to you account!</p>
+    <p><Tr label="login.desc" /></p>
     <Button color="primary" onClick={singInWithGoogle}>singInWithGoogle</Button>
     {' '}
     <Button color="primary" onClick={singInWithGithub}>singInWithGithub</Button>

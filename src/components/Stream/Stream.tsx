@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ModalCode } from '../ModalCode/ModalCode';
 import { firebaseDatabase } from '../../App';
 import moment  from 'moment';
@@ -35,55 +35,61 @@ interface StreamProps {
   }
 export function Stream({id, start, stop}: StreamProps) {
   const [name, setName] = useState<string>('');
+  const [rawData, setRawData] = useState<StreamItemRaw['events']>({});
   const [groups, setGroups] = useState<StreamGroup[] | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const streamRef = useMemo(() => firebaseDatabase.ref(`streams/${id}`), [id]);
 
   useEffect(() => {
-    const streamRef = firebaseDatabase.ref(`streams/${id}`);
-    streamRef.on('value', function(snapshot) {
-      const streamData = snapshot.val() as StreamItemRaw;
-      setName(streamData.name);
-      setGroups(Object.entries(streamData.events || {}).reduce((groups, [key, value]) => {
-        if (start > value.timestamp || stop < value.timestamp) {
-          return groups;
-        }
-        if(value.payload && value.payload.type) {
-
-          delete value.payload.type;
-        }
-        const lastItem = groups[groups.length-1];
-        const isSame = lastItem.events.length === 0 || lastItem.events.some(event => isEqual(event.payload, value.payload));
-
-        if(isSame) {
-          lastItem.events.push(value);
-          if(lastItem.timestampMin > value.timestamp) {
-            lastItem.timestampMin = value.timestamp;
-          }
-          if(lastItem.timestampMax < value.timestamp) {
-            lastItem.timestampMax = value.timestamp;
-          }
-        }else {
-          groups.push({
-            events: [value],
-            timestampMax: value.timestamp,
-            timestampMin: value.timestamp,
-          });
-          if(lastItem.timestampMax < value.timestamp) {
-            lastItem.timestampMax = value.timestamp;
-          }
-        }
-
+    setGroups(Object.entries(rawData).reduce((groups, [key, value]) => {
+      if (start > value.timestamp || stop < value.timestamp) {
         return groups;
-      }, [{
-        events: [],
-        timestampMax: start,
-        timestampMin: stop,
-      }] as StreamGroup[]));
-      console.log({ streamData });
-    });
+      }
+      if(value.payload && value.payload.type) {
 
-    return () => streamRef.off('value');
-  }, [id, start, stop]);
+        delete value.payload.type;
+      }
+      const lastItem = groups[groups.length-1];
+      const isSame = lastItem.events.length === 0 || lastItem.events.some(event => isEqual(event.payload, value.payload));
+
+      if(isSame) {
+        lastItem.events.push(value);
+        if(lastItem.timestampMin > value.timestamp) {
+          lastItem.timestampMin = value.timestamp;
+        }
+        if(lastItem.timestampMax < value.timestamp) {
+          lastItem.timestampMax = value.timestamp;
+        }
+      }else {
+        groups.push({
+          events: [value],
+          timestampMax: value.timestamp,
+          timestampMin: value.timestamp,
+        });
+        if(lastItem.timestampMax < value.timestamp) {
+          lastItem.timestampMax = value.timestamp;
+        }
+      }
+
+      return groups;
+    }, [{
+      events: [],
+      timestampMax: start,
+      timestampMin: stop,
+    }] as StreamGroup[]));
+    console.log({ rawData });
+  }, [start, stop, rawData]);
+
+  useEffect(() => {
+    function handler(snapshot: firebase.database.DataSnapshot) {
+      const streamData = snapshot.val() as StreamItemRaw;
+      setName(streamData.name || '');
+      setRawData(streamData.events || {});
+    }
+    streamRef.on('value', handler);
+
+    return () => streamRef.off('value', handler);
+  }, [streamRef]);
 
   if (groups === null) {
     return <div>{'Loading'}</div>;
