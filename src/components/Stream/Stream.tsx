@@ -13,9 +13,10 @@ interface StreamProps {
   stop: number;
 }
 
-  interface StreamEvent {
+  interface StreamEventRaw {
     type: string;
-    timestamp: number;
+    time: number;
+    color?: string;
     payload: {
       [any: string]: string
     }
@@ -24,14 +25,14 @@ interface StreamProps {
   interface StreamItemRaw {
     name: string;
     events: {
-      [id: string]: StreamEvent;
+      [id: string]: StreamEventRaw;
     }
   }
 
   interface StreamGroup {
     timestampMin: number;
     timestampMax: number;
-    events: StreamEvent[];
+    events: StreamEventRaw[];
   }
 export function Stream({id, start, stop}: StreamProps) {
   const [name, setName] = useState<string>('');
@@ -42,32 +43,36 @@ export function Stream({id, start, stop}: StreamProps) {
 
   useEffect(() => {
     setGroups(Object.entries(rawData).reduce((groups, [key, value]) => {
-      if (start > value.timestamp || stop < value.timestamp) {
+      if (start > value.time || stop < value.time) {
         return groups;
       }
-      if(value.payload && value.payload.type) {
 
-        delete value.payload.type;
-      }
       const lastItem = groups[groups.length-1];
       const isSame = lastItem.events.length === 0 || lastItem.events.some(event => isEqual(event.payload, value.payload));
 
       if(isSame) {
         lastItem.events.push(value);
-        if(lastItem.timestampMin > value.timestamp) {
-          lastItem.timestampMin = value.timestamp;
+        if(lastItem.timestampMin > value.time) {
+          lastItem.timestampMin = value.time;
         }
-        if(lastItem.timestampMax < value.timestamp) {
-          lastItem.timestampMax = value.timestamp;
+        if(lastItem.timestampMax < value.time) {
+          lastItem.timestampMax = value.time;
+        }
+        if(value.type.indexOf('stop') === 0) {
+          groups.push({
+            events: [],
+            timestampMax: start,
+            timestampMin: stop,
+          });
         }
       }else {
         groups.push({
           events: [value],
-          timestampMax: value.timestamp,
-          timestampMin: value.timestamp,
+          timestampMax: value.time,
+          timestampMin: value.time,
         });
-        if(lastItem.timestampMax < value.timestamp) {
-          lastItem.timestampMax = value.timestamp;
+        if(lastItem.timestampMax < value.time) {
+          lastItem.timestampMax = value.time;
         }
       }
 
@@ -95,7 +100,7 @@ export function Stream({id, start, stop}: StreamProps) {
     return <div>{'Loading'}</div>;
   }
 
-  const dayTime = (stop-start) / 1000;
+  const dayTime = (stop-start) ;
   return <div className="stream">
     <div className="stream__meta">
     <h3>Strumień : {name}</h3>
@@ -106,9 +111,9 @@ export function Stream({id, start, stop}: StreamProps) {
         if(item.events.length === 0) {
           return null;
         }
-        const left = ((item.timestampMin-start)/1000)/ dayTime * 100;
-        const right = ((item.timestampMax-start)/1000)/ dayTime * 100;
-        const groupTime = (item.timestampMax-item.timestampMin) / 1000;
+        const left = ((item.timestampMin-start))/ dayTime * 100;
+        const right = ((item.timestampMax-start))/ dayTime * 100;
+        const groupTime = (item.timestampMax-item.timestampMin) ;
         const payloadText = Object.keys(item.events[0].payload || {} ).map((key) => `${key}: ${item.events[0].payload[key]}`).join('\n');
         return <div 
         title={payloadText}
@@ -129,12 +134,12 @@ export function Stream({id, start, stop}: StreamProps) {
           <div 
               className="stream__time stream__time--bottom"
             >
-              {Math.floor(moment.duration(moment(item.timestampMax,'x').diff(moment(item.timestampMin,'x'))).asMinutes())} min
+              {Math.floor(moment.duration(moment(item.timestampMax,'X').diff(moment(item.timestampMin,'X'))).asMinutes())} min
             </div>
           <div 
               className="stream__time stream__time--left"
             >
-              {moment(item.timestampMin,'x').format('HH:mm')}
+              {moment(item.timestampMin,'X').format('HH:mm')}
             </div>
             <div 
               className="stream__payload"
@@ -143,7 +148,7 @@ export function Stream({id, start, stop}: StreamProps) {
               
             </div>
           {item.events.map((event, index) => {
-            const leftSub = ((event.timestamp-item.timestampMin)/1000)/ groupTime * 100;
+            const leftSub = ((event.time-item.timestampMin))/ groupTime * 100;
             return (<div 
               className="stream__event"
               key={index}
@@ -158,7 +163,7 @@ export function Stream({id, start, stop}: StreamProps) {
             <div 
               className="stream__time stream__time--right"
             >
-              {moment(item.timestampMax,'x').format('HH:mm')}
+              {moment(item.timestampMax,'X').format('HH:mm')}
             </div>
         </div>;
       })}
@@ -166,7 +171,7 @@ export function Stream({id, start, stop}: StreamProps) {
     {selectedGroupId !== null && <div className="stream__group stream__group--selected">
     {groups[selectedGroupId].events.map((event, index) => {
       const groupTime = (groups[selectedGroupId].timestampMax-groups[selectedGroupId].timestampMin) / 1000;
-            const leftSub = ((event.timestamp-groups[selectedGroupId].timestampMin)/1000)/ groupTime * 100;
+            const leftSub = ((event.time-groups[selectedGroupId].timestampMin)/1000)/ groupTime * 100;
             return (<div 
               className="stream__event"
               key={index}

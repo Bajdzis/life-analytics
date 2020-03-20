@@ -56,8 +56,8 @@ function App() {
     return () => window.removeEventListener('wheel', handler);
   }, [zoom, setZoom]);
 
-  const start = parseInt(moment().set('hour', 0).set('minute', 0).set('millisecond', 0).add(zoom[0],'minutes').format('x'), 10);
-  const stop = parseInt(moment().set('hour', 24).set('minute', 0).set('millisecond', 0).subtract(zoom[1],'minutes').format('x'), 10);
+  const start = parseInt(moment().set('hour', 0).set('minute', 0).set('millisecond', 0).add(zoom[0],'minutes').format('X'), 10);
+  const stop = parseInt(moment().set('hour', 24).set('minute', 0).set('millisecond', 0).subtract(zoom[1],'minutes').format('X'), 10);
 
   const singOut =  () => {
     firebaseApp.auth().signOut();

@@ -5,12 +5,12 @@ interface SendEventButtonProps {
   id: string;
 }
 
-const sendEvent = (streamId = '-M2TFr_wqRpCnqmBbnM2', type: string = 'life-analytics-page', timestamp:number = (new Date()).getTime()) => {
+const sendEvent = (streamId = '-M2TFr_wqRpCnqmBbnM2', type: string = 'start', time:number = (Math.round((new Date()).getTime()/ 1000))) => {
     fetch(`https://auto-time-72f2c.firebaseio.com/streams/${streamId}/events.json`, {
         method:'POST',
         body: JSON.stringify({
             type, 
-            timestamp
+            time
         })
     })
 }
