@@ -1,3 +1,13 @@
 {
-    "login.desc": "Login to you account!"
+    "login.desc": "Login to you account!",
+    "streamModal.id": "Number this stream:",
+    "streamModal.plugins": "Plugins:",
+    "streamModal.code": "Sample code:",
+    "streamModal.button": "Get code",
+    "modal.close": "Zamknij",
+    "login.with.google" : "Login with google", 
+    "login.with.github" : "Login with Github",
+    "send.event.button.start": "Send event 'start'",
+    "send.event.button.stop": "Send event 'stop'",
+    "streamModal.title": "Properties: $(name)"
 }

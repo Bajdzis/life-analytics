@@ -1,8 +1,9 @@
 .stream__timeline {
-  width:100%;
+  width: 100%;
   height: 60px;
   position: relative;
-  padding:35px 0;
+  padding: 35px 0;
+  box-sizing: content-box;
 }
 
 .stream__group {
@@ -20,7 +21,8 @@
 
 .stream__group--selected {
   position: relative;
-  width: 100%;
+  width: calc(100% - 40px);
+  margin: 0 auto;
 }
 
 .stream__event {

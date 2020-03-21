@@ -5,6 +5,7 @@ import { Stream } from './components/Stream/Stream';
 import { LoginPage } from './components/LoginPage/LoginPage';
 import { Button } from 'reactstrap';
 import moment  from 'moment';
+import { TrChoice } from './components/Translation/TrChoice';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwFE6p8DLMvd3M-Ldbo2S8W_jc7lVmHI8",
@@ -25,7 +26,7 @@ export const firebaseDatabase = firebase.database();
 function App() {
 
   const [user, setUser] = useState<firebase.User | null>(null);
-  const [zoom, setZoom] = useState<[number, number]>([0,0]);
+  const [zoom, setZoom] = useState<[number, number]>([360,180]);
   const [loading, setLoading] = useState(true);
   const [streamsId, setStreamsId] = useState<string[]>([]);
 
@@ -35,19 +36,22 @@ function App() {
         e.preventDefault();
         const leftPercent = e.clientX / window.innerWidth;
         const rightPercent = 1 - leftPercent;
-        let left =  zoom[0] - (e.deltaY  * leftPercent);
-        let right = zoom[1] - (e.deltaY * rightPercent);
+        let speed = 60; //min
+        if(e.deltaY < 0){
+          speed = -speed;
+        }
+        let left =  zoom[0] - (speed * leftPercent);
+        let right = zoom[1] - (speed * rightPercent);
         if(left < 0){
           left = 0;
         }
         if(right < 0){
           right = 0;
         }
-        if(left > 1400){
-          left = 1400;
-        }
-        if(right > 1400){
-          right = 1400;
+
+        if(left + right > 1400){
+          right = zoom[1];
+          left =  zoom[0];
         }
         setZoom([left, right]);
       }
@@ -57,7 +61,7 @@ function App() {
   }, [zoom, setZoom]);
 
   const start = parseInt(moment().set('hour', 0).set('minute', 0).set('millisecond', 0).add(zoom[0],'minutes').format('X'), 10);
-  const stop = parseInt(moment().set('hour', 24).set('minute', 0).set('millisecond', 0).subtract(zoom[1],'minutes').format('X'), 10);
+  const stop = parseInt(moment().set('hour', 23).set('minute', 59).set('millisecond', 0).subtract(zoom[1],'minutes').format('X'), 10);
 
   const singOut =  () => {
     firebaseApp.auth().signOut();
@@ -105,11 +109,16 @@ function App() {
 
     return firebaseDatabase.ref().update(updates);
   }
-
+  console.log(zoom)
   return (
     <div className="App">
       <header className="App-header">
+      {moment(start,'X').format('HH:mm')}
+      {moment(stop,'X').format('HH:mm')}
+      <TrChoice />
         Hi, <strong>{user.displayName}</strong> !{' '}
+        
+  {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''}/> }
 <Button outline size="sm" color="secondary" onClick={singOut}>singOut</Button>
         
 <br/>

@@ -1,5 +1,5 @@
-import React, { useContext }  from 'react';
-import { TranslationContext } from "./TrProvider";
+import React from 'react';
+import { useTranslate } from "./TrProvider";
 
 interface TrProps {
     label: string;
@@ -7,6 +7,7 @@ interface TrProps {
 }
 
 export const Tr = ({label, ...variables}:TrProps) => {
-    const tr = useContext(TranslationContext);
-    return <span>{tr.translate(label, variables)}</span>;
+    const { translate, labels } = useTranslate();
+    console.log({translate, labels}, label);
+    return <span>{translate(label, variables)}</span>;
 };

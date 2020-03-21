@@ -1,3 +1,13 @@
 {
-    "login.desc": "Zaloguj się!"
+    "login.desc": "Zaloguj się!",
+    "streamModal.id": "Numer id tego strumienia to:",
+    "streamModal.plugins": "Dostępne wtyczki",
+    "streamModal.code": "Przykład somodzielnej integracji:",
+    "streamModal.button": "Pobierz kod",
+    "modal.close": "Zamknij",
+    "login.with.google" : "Zaloguj z google", 
+    "login.with.github" : "Zaloguj przez Github",
+    "send.event.button.start": "Wyślij event 'start'",
+    "send.event.button.stop": "Wyślij event 'stop'",
+    "streamModal.title": "Właściwości: $(name)"
 }

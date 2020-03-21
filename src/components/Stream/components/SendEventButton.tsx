@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'reactstrap';
+import { Tr } from '../../Translation/Tr';
 
 interface SendEventButtonProps {
   id: string;
@@ -16,5 +17,9 @@ const sendEvent = (streamId = '-M2TFr_wqRpCnqmBbnM2', type: string = 'start', ti
 }
 
 export function SendEventButton({id}: SendEventButtonProps) {
-  return <Button onClick={() => sendEvent(id)}>sendEvent</Button>;
+  return <>
+    <Button onClick={() => sendEvent(id, 'start.button')}><Tr label="send.event.button.start" /></Button>
+    {' '}
+    <Button onClick={() => sendEvent(id, 'stop.button')}><Tr label="send.event.button.stop" /></Button>
+  </>;
 }

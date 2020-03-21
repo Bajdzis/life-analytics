@@ -42,6 +42,7 @@ export function Stream({id, start, stop}: StreamProps) {
   const streamRef = useMemo(() => firebaseDatabase.ref(`streams/${id}`), [id]);
 
   useEffect(() => {
+    // const awesomeMap = new Map<{[key: string]: string}, StreamEventRaw>();
     setGroups(Object.entries(rawData).reduce((groups, [key, value]) => {
       if (start > value.time || stop < value.time) {
         return groups;
@@ -49,6 +50,7 @@ export function Stream({id, start, stop}: StreamProps) {
 
       const lastItem = groups[groups.length-1];
       const isSame = lastItem.events.length === 0 || lastItem.events.some(event => isEqual(event.payload, value.payload));
+      // const isSame = lastItem.events.length === 0 || lastItem.events.some(event => isEqual(event.payload, value.payload));
 
       if(isSame) {
         lastItem.events.push(value);
@@ -58,11 +60,11 @@ export function Stream({id, start, stop}: StreamProps) {
         if(lastItem.timestampMax < value.time) {
           lastItem.timestampMax = value.time;
         }
-        if(value.type.indexOf('stop') === 0) {
+        if(value.type.indexOf('stop.') === 0) {
           groups.push({
             events: [],
-            timestampMax: start,
-            timestampMin: stop,
+            timestampMax: 0,
+            timestampMin: 99999999999999,
           });
         }
       }else {
@@ -79,11 +81,11 @@ export function Stream({id, start, stop}: StreamProps) {
       return groups;
     }, [{
       events: [],
-      timestampMax: start,
-      timestampMin: stop,
+      timestampMax: 0,
+      timestampMin: 99999999999999,
     }] as StreamGroup[]));
     console.log({ rawData });
-  }, [start, stop, rawData]);
+  }, [rawData]);
 
   useEffect(() => {
     function handler(snapshot: firebase.database.DataSnapshot) {
